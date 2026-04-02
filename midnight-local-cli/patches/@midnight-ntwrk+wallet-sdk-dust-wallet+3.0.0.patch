@@ -1,0 +1,88 @@
+diff --git a/node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/v1/Transacting.js b/node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/v1/Transacting.js
+index 0e142b8..1f93902 100644
+--- a/node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/v1/Transacting.js
++++ b/node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/v1/Transacting.js
+@@ -147,29 +147,55 @@ export class TransactingCapabilityImplementation {
+         const network = this.networkId;
+         // Create a balancing tx from recipe inputs without persisting state changes
+         const [spends] = CoreWallet.spendCoins(state, secretKey, recipeInputs, currentTime);
+-        const intent = Intent.new(ttl);
+-        intent.dustActions = new DustActions(SignatureMarker.signature, ProofMarker.preProof, currentTime, [...spends], []);
+-        const balancingTx = Transaction.fromPartsRandomized(network, undefined, undefined, intent);
+-        // Erase proofs on everything and merge
+-        const erasedBalancing = balancingTx.eraseProofs();
++        const usedSegments = new Set();
++        for (const tx of transactions) {
++            const intents = tx.intents;
++            if (!intents)
++                continue;
++            for (const segment of intents.keys()) {
++                usedSegments.add(segment);
++            }
++        }
++        // fromPartsRandomized picks a random segment; it can collide with intents on merged contract txs and merge() fails.
++        let erasedBalancing;
++        for (let attempt = 0; attempt < 128; attempt++) {
++            const intent = Intent.new(ttl);
++            intent.dustActions = new DustActions(SignatureMarker.signature, ProofMarker.preProof, currentTime, [...spends], []);
++            const balancingTx = Transaction.fromPartsRandomized(network, undefined, undefined, intent);
++            const outIntents = balancingTx.intents;
++            const segment = outIntents && outIntents.size > 0 ? outIntents.keys().next().value : undefined;
++            if (segment !== undefined && !usedSegments.has(segment)) {
++                erasedBalancing = balancingTx.eraseProofs();
++                break;
++            }
++        }
++        if (!erasedBalancing) {
++            throw new OtherWalletError({
++                message: 'dryRunFee: could not allocate a dust balancing segment id that does not collide with merged transactions (128 attempts)',
++            });
++        }
+         const mergedTx = transactions.reduce((acc, tx) => acc.merge(tx.eraseProofs()), erasedBalancing);
+         return this.calculateFee(mergedTx, ledgerParams);
+     }
+     static feeImbalance(transaction, totalFee) {
+-        const [_, imbalance] = transaction
+-            .imbalances(0, totalFee)
+-            .entries()
+-            .find(([tt, _]) => tt.tag === 'dust') ?? [];
++        const [_, imbalance] = Array.from(transaction.imbalances(0, totalFee).entries()).find(([tt, _]) => tt.tag === 'dust') ?? [];
+         return imbalance ?? 0n;
+     }
+     computeBalancingRecipe(secretKey, state, transactions, ttl, currentTime, ledgerParams) {
+         const initialFees = transactions.reduce((total, transaction) => total +
+             TransactingCapabilityImplementation.feeImbalance(transaction, this.calculateFee(transaction, ledgerParams)), 0n);
+         const dust = this.getCoins().getAvailableCoinsWithGeneratedDust(state, currentTime);
+-        return pipe(Effect.iterate({ currentFee: initialFees, recipeInputs: [], converged: false }, {
++        const maxDustBalanceIterations = 512;
++        return pipe(Effect.iterate({ currentFee: initialFees, recipeInputs: [], converged: false, iteration: 0 }, {
+             while: (s) => !s.converged,
+-            body: ({ currentFee }) => Effect.try({
++            body: (s) => Effect.try({
+                 try: () => {
++                    if (s.iteration >= maxDustBalanceIterations) {
++                        throw new OtherWalletError({
++                            message: `Dust balancing did not converge after ${maxDustBalanceIterations} iterations (try fund-and-register-dust / more DUST, or check contract fee path).`,
++                        });
++                    }
++                    const { currentFee } = s;
+                     const recipe = getBalanceRecipe({
+                         coins: dust.map((coin) => ({
+                             type: 'dust',
+@@ -188,7 +214,15 @@ export class TransactingCapabilityImplementation {
+                     const recipeInputs = recipe.inputs.map((input) => ({ token: input.token, value: input.value }));
+                     const newFee = this.dryRunFee(recipeInputs, transactions, secretKey, state, ttl, currentTime, ledgerParams);
+                     const recipeAmountCoverage = recipeInputs.reduce((sum, input) => sum + input.value, 0n);
+-                    return { currentFee: newFee, recipeInputs, converged: newFee <= recipeAmountCoverage };
++                    // dryRunFee can be a few units above summed inputs (rounding / dry-run merge); keep slack tiny
++                    // so we never "converge" while still underpaying fees (large pad caused Invalid Transaction Custom 138).
++                    const coveragePad = 512n;
++                    return {
++                        currentFee: newFee,
++                        recipeInputs,
++                        converged: newFee <= recipeAmountCoverage + coveragePad,
++                        iteration: s.iteration + 1,
++                    };
+                 },
+                 catch: (err) => {
+                     if (err instanceof BalancingInsufficientFundsError) {

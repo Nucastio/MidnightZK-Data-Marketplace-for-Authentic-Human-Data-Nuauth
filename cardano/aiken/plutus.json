@@ -1,0 +1,87 @@
+{
+  "preamble": {
+    "title": "nuauth/marketplace_cardano",
+    "description": "NuAuth / MidnightZK marketplace — Cardano validators (licensing & anchors). Off-chain v1 uses Lucid metadata txs; wire these validators in a later milestone.",
+    "version": "0.1.0",
+    "plutusVersion": "v3",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.1.21+42babe5"
+    }
+  },
+  "validators": [
+    {
+      "title": "nuauth_license_listing.nuauth_license_listing.spend",
+      "datum": {
+        "title": "datum",
+        "schema": {
+          "$ref": "#/definitions/nuauth_license_listing~1LicenseListingDatum"
+        }
+      },
+      "redeemer": {
+        "title": "redeemer",
+        "schema": {
+          "$ref": "#/definitions/nuauth_license_listing~1LicenseRedeemer"
+        }
+      },
+      "compiledCode": "59020f01010029800aba2aba1aba0aab9faab9eaab9dab9a488888896600264653001300800198041804800cdc3a40049112cc004c004c01cdd500144ca60026018003300c300d0019b874800122259800980098059baa0078acc004c030dd5003c566002600260166ea800a26644b30013371090001bad3002300e37540031337126eb4c008c038dd500099199119801001000912cc0040062900044c8cdc0192cc004c020c048dd5000c56600266e3cdd7180b18099baa0010058992cc004c034c04cdd5000c5200089bad3017301437540028090c966002601a60266ea80062980103d87a8000899198008009bab30183015375400444b30010018a6103d87a8000899192cc004cdc8a45000018acc004cdc7a44100001899ba548000cc068c0600092f5c114c0103d87a80004059133004004301c00340586eb8c058004c064005017202432330010013756602e603060286ea800c896600200314c103d87a8000899192cc004cdc8a45000018acc004cdc7a44100001899ba548000cc064c05c0092f5c114c0103d87a80004055133004004301b00340546eb8c054004c0600050164520004045148001011180a98091baa30153012375400266006006602c00460280028090dd6180198079baa301200c375c6022601c6ea8006294100c1180818089808800980798061baa0028b20148b201a8b201418041baa0028b200c180400098019baa0088a4d13656400401",
+      "hash": "5b0f6c512a5902f731e147db2c2e3acd6f7826fdc9e7f037a96e582c"
+    },
+    {
+      "title": "nuauth_license_listing.nuauth_license_listing.else",
+      "redeemer": {
+        "schema": {}
+      },
+      "compiledCode": "59020f01010029800aba2aba1aba0aab9faab9eaab9dab9a488888896600264653001300800198041804800cdc3a40049112cc004c004c01cdd500144ca60026018003300c300d0019b874800122259800980098059baa0078acc004c030dd5003c566002600260166ea800a26644b30013371090001bad3002300e37540031337126eb4c008c038dd500099199119801001000912cc0040062900044c8cdc0192cc004c020c048dd5000c56600266e3cdd7180b18099baa0010058992cc004c034c04cdd5000c5200089bad3017301437540028090c966002601a60266ea80062980103d87a8000899198008009bab30183015375400444b30010018a6103d87a8000899192cc004cdc8a45000018acc004cdc7a44100001899ba548000cc068c0600092f5c114c0103d87a80004059133004004301c00340586eb8c058004c064005017202432330010013756602e603060286ea800c896600200314c103d87a8000899192cc004cdc8a45000018acc004cdc7a44100001899ba548000cc064c05c0092f5c114c0103d87a80004055133004004301b00340546eb8c054004c0600050164520004045148001011180a98091baa30153012375400266006006602c00460280028090dd6180198079baa301200c375c6022601c6ea8006294100c1180818089808800980798061baa0028b20148b201a8b201418041baa0028b200c180400098019baa0088a4d13656400401",
+      "hash": "5b0f6c512a5902f731e147db2c2e3acd6f7826fdc9e7f037a96e582c"
+    }
+  ],
+  "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Int": {
+      "dataType": "integer"
+    },
+    "aiken/crypto/VerificationKeyHash": {
+      "title": "VerificationKeyHash",
+      "dataType": "bytes"
+    },
+    "nuauth_license_listing/LicenseListingDatum": {
+      "title": "LicenseListingDatum",
+      "description": "On-chain listing: buyer spends this UTxO only if the same transaction pays\n at least `price` lovelace to `seller_vkh` (payment credential match).\n `dataset_id` is carried for off-chain indexing / future constraints (v1: not enforced on-chain beyond presence).",
+      "anyOf": [
+        {
+          "title": "LicenseListingDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "seller_vkh",
+              "$ref": "#/definitions/aiken~1crypto~1VerificationKeyHash"
+            },
+            {
+              "title": "dataset_id",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "price",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    },
+    "nuauth_license_listing/LicenseRedeemer": {
+      "title": "LicenseRedeemer",
+      "anyOf": [
+        {
+          "title": "Purchase",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        }
+      ]
+    }
+  }
+}

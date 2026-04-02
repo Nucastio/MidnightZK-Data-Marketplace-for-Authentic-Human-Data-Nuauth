@@ -1,0 +1,25 @@
+{
+  "name": "midnightzk-nuauth-workspace",
+  "private": true,
+  "description": "NuAuth marketplace: Cardano (Lucid / Preprod) + Midnight Compact (local or Preprod) + backend API",
+  "workspaces": [
+    "contract",
+    "midnight-local-cli"
+  ],
+  "scripts": {
+    "contract:compact": "npm run compact -w @nuauth/midnight-contract",
+    "contract:build": "npm run build -w @nuauth/midnight-contract",
+    "midnight:deploy": "npm run deploy -w @nuauth/midnight-local-cli",
+    "midnight:run-all": "npm run run-all -w @nuauth/midnight-local-cli",
+    "midnight:print-address": "npm run print-midnight-address -w @nuauth/midnight-local-cli",
+    "test:sandbox": "bash scripts/test-sandbox.sh",
+    "e2e:cardano-preprod-midnight-local": "bash scripts/e2e-cardano-preprod-midnight-local-pretty.sh",
+    "demo:replay-preview-sandbox": "bash scripts/demo-nuauth-preview-sandbox-walkthrough.sh",
+    "demo:replay-preview-mock": "bash scripts/demo-nuauth-preview-sandbox-walkthrough.sh",
+    "demo:record-preview-asciinema": "bash scripts/record-nuauth-preview-asciinema.sh",
+    "demo:render-preview-mp4": "bash scripts/render-asciicast-to-mp4.sh"
+  },
+  "dependencies": {
+    "hono": "^4.12.9"
+  }
+}

@@ -1,0 +1,10 @@
+name = "nuauth/marketplace_cardano"
+version = "0.1.0"
+plutusVersion = "v3"
+licences = ["Apache-2.0"]
+description = "NuAuth / MidnightZK marketplace — Cardano validators (licensing & anchors). Off-chain v1 uses Lucid metadata txs; wire these validators in a later milestone."
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "v2"
+source = "github"

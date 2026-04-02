@@ -1,0 +1,43 @@
+pragma language_version >= 0.22;
+
+import CompactStandardLibrary;
+
+/// SHA-256 of raw dataset bytes anchored from L1 metadata (Cardano) and mirrored privately.
+export ledger contentCommitment: Bytes<32>;
+
+/// Public creator key derived off-chain as `persistentHash(["nuauth:stamp:creator:v1", creatorSecret])`.
+export ledger creatorPk: Bytes<32>;
+
+/// Optional binding to an L1 stamp transaction digest (32 bytes chosen off-chain, e.g. hash of tx id).
+export ledger l1Anchor: Bytes<32>;
+
+witness creatorSecret(): Maybe<Bytes<32>>;
+
+circuit hashCreatorPk(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "nuauth:stamp:creator:v1"), sk]);
+}
+
+constructor(commitment: Bytes<32>, ownerPk: Bytes<32>) {
+  contentCommitment = disclose(commitment);
+  creatorPk = disclose(ownerPk);
+  l1Anchor = disclose(pad(32, ""));
+}
+
+/// ZK: proves knowledge of creator secret matching on-ledger `creatorPk` (human / creator authority).
+export circuit proveCreatorStamp(): Boolean {
+  const k = creatorSecret();
+  assert(k.is_some, "Creator secret not set");
+  const pk = disclose(hashCreatorPk(k.value));
+  assert(pk == creatorPk, "Not creator");
+  return true;
+}
+
+/// ZK: same proof gate, then records an L1 anchor digest on the private ledger (Midnight ↔ Cardano binding).
+export circuit bindL1Stamp(anchor: Bytes<32>): [] {
+  const k = creatorSecret();
+  assert(k.is_some, "Creator secret not set");
+  const pk = disclose(hashCreatorPk(k.value));
+  assert(pk == creatorPk, "Not creator");
+  l1Anchor = disclose(anchor);
+}

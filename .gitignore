@@ -1,0 +1,19 @@
+.env
+.env.local
+*.log
+.DS_Store
+data/
+node_modules/
+contract/dist/
+midnight-local-cli/dist/
+midnight-local-cli/midnight-level-db/
+
+# Demo fixture playback + video production artifacts
+fixtures/
+recordings/*
+!recordings/README.txt
+
+*.cast
+*.mp4
+*.gif
+*.webm

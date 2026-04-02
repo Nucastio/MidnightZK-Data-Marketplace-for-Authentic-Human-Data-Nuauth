@@ -1,0 +1,32 @@
+diff --git a/node_modules/@midnight-ntwrk/wallet-sdk-unshielded-wallet/dist/v1/TransactionOps.js b/node_modules/@midnight-ntwrk/wallet-sdk-unshielded-wallet/dist/v1/TransactionOps.js
+index b8402ef..d8f7b6d 100644
+--- a/node_modules/@midnight-ntwrk/wallet-sdk-unshielded-wallet/dist/v1/TransactionOps.js
++++ b/node_modules/@midnight-ntwrk/wallet-sdk-unshielded-wallet/dist/v1/TransactionOps.js
+@@ -28,7 +28,11 @@ export const TransactionOps = {
+         });
+     },
+     getSegments(transaction) {
+-        return transaction.intents?.keys().toArray() ?? [];
++        if (!transaction.intents?.size) {
++            return [];
++        }
++        const keys = transaction.intents.keys();
++        return typeof keys.toArray === 'function' ? keys.toArray() : [...keys];
+     },
+     // @TODO - https://shielded.atlassian.net/browse/PM-21260
+     addSignature(transaction, signature, segment) {
+@@ -54,12 +58,9 @@ export const TransactionOps = {
+         });
+     },
+     getImbalances(transaction, segment) {
+-        const imbalances = transaction
+-            .imbalances(segment)
+-            .entries()
++        const imbalances = Array.from(transaction.imbalances(segment).entries())
+             .filter(([token, value]) => token.tag === 'unshielded' && value !== 0n)
+-            .map(([token, value]) => [token.raw.toString(), value])
+-            .toArray();
++            .map(([token, value]) => [token.raw.toString(), value]);
+         return Imbalances.fromEntries(imbalances);
+     },
+     addSignaturesToOffer(offer, signature, segment, offerType) {

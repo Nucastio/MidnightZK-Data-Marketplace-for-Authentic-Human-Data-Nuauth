@@ -1,0 +1,65 @@
+diff --git a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/CoreWallet.js b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/CoreWallet.js
+index 60db0d8..e478329 100644
+--- a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/CoreWallet.js
++++ b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/CoreWallet.js
+@@ -25,7 +25,11 @@ export const PublicKeys = {
+ export const CoinHashesMap = {
+     empty: {},
+     pickAllCoins(state) {
+-        return [...state.coins, ...state.pendingOutputs.values().map(([coin]) => coin)];
++        const pendingIter = state.pendingOutputs.values();
++        const pendingCoins = typeof pendingIter.map === 'function'
++            ? [...pendingIter.map(([coin]) => coin)]
++            : Array.from(pendingIter, ([coin]) => coin);
++        return [...state.coins, ...pendingCoins];
+     },
+     assertValid(map, state) {
+         const coins = CoinHashesMap.pickAllCoins(state);
+diff --git a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionImbalances.js b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionImbalances.js
+index 5134908..1b78d25 100644
+--- a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionImbalances.js
++++ b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionImbalances.js
+@@ -23,8 +23,8 @@ export const TransactionImbalances = new (class {
+         };
+     };
+     areBalanced = (imbalances) => {
+-        const areFallibleAllZeroes = imbalances.fallible.entries().every(([, value]) => value === 0n);
+-        const areGuaranteedAllZeroes = imbalances.guaranteed.entries().every(([, value]) => value === 0n);
++        const areFallibleAllZeroes = Array.from(imbalances.fallible.entries()).every(([, value]) => value === 0n);
++        const areGuaranteedAllZeroes = Array.from(imbalances.guaranteed.entries()).every(([, value]) => value === 0n);
+         return areFallibleAllZeroes && areGuaranteedAllZeroes;
+     };
+ })();
+diff --git a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionOps.js b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionOps.js
+index 04e45d7..1f51359 100644
+--- a/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionOps.js
++++ b/node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/v1/TransactionOps.js
+@@ -48,24 +48,16 @@ export const TransactionOps = new (class {
+             });
+         },
+         getGuaranteedImbalances: (tx) => {
+-            const rawGuaranteedImbalances = tx
+-                .imbalances(0)
+-                .entries()
++            const rawGuaranteedImbalances = Array.from(tx.imbalances(0).entries())
+                 .filter(([token]) => token.tag === 'shielded')
+-                .map(([token, value]) => {
+-                return [token.raw.toString(), value];
+-            });
++                .map(([token, value]) => [token.raw.toString(), value]);
+             return Imbalances.fromEntries(rawGuaranteedImbalances);
+         },
+         getFallibleImbalances: (tx) => {
+             try {
+-                const rawFallibleImbalances = tx
+-                    .imbalances(1)
+-                    .entries()
++                const rawFallibleImbalances = Array.from(tx.imbalances(1).entries())
+                     .filter(([token]) => token.tag === 'shielded')
+-                    .map(([token, value]) => {
+-                    return [token.raw.toString(), value];
+-                });
++                    .map(([token, value]) => [token.raw.toString(), value]);
+                 return Imbalances.fromEntries(rawFallibleImbalances);
+             }
+             catch {
