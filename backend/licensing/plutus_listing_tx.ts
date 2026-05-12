@@ -123,12 +123,17 @@ export async function submitPlutusLicensePurchase(
   const msg = chunkCip20Messages(json);
   const redeemerHex = purchaseRedeemerHex();
 
+  const allUtxos = await lucid.wallet().getUtxos();
+  const adaOnlyUtxos = allUtxos.filter(
+    (u) => Object.keys(u.assets).length === 1 && u.assets.lovelace !== undefined,
+  );
+
   const signed = await lucid.newTx()
     .attach.SpendingValidator(script)
     .collectFrom([utxo], redeemerHex)
     .pay.ToAddress(sellerAddress, { lovelace: price })
     .attachMetadata(674, { msg })
-    .complete()
+    .complete({ presetWalletInputs: adaOnlyUtxos })
     .then((tb) => tb.sign.withWallet().complete());
 
   const txHash = await signed.submit();

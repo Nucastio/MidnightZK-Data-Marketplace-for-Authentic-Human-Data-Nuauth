@@ -8,8 +8,8 @@
     "cardano:smoke": "deno run --allow-net --allow-env --allow-read backend/cardano/smoke.ts",
     "cardano:smoke:emulator": "bash -c 'scripts/patch-libsodium-deno.sh && env CARDANO_BACKEND=emulator deno run --allow-net --allow-env --allow-read backend/cardano/smoke.ts'",
     "cardano:license-smoke:emulator": "bash -c 'scripts/patch-libsodium-deno.sh && env CARDANO_BACKEND=emulator deno run --allow-net --allow-env --allow-read backend/cardano/license_listing_smoke.ts'",
-    "serve": "bash -c 'scripts/patch-libsodium-deno.sh && deno run --allow-net --allow-env --allow-read backend/api/main.ts'",
-    "serve:emulator": "bash -c 'scripts/patch-libsodium-deno.sh && env CARDANO_BACKEND=emulator deno run --allow-net --allow-env --allow-read backend/api/main.ts'",
+    "serve": "bash -c 'scripts/patch-libsodium-deno.sh && deno run --allow-net --allow-env --allow-read --allow-write --allow-run backend/api/main.ts'",
+    "serve:emulator": "bash -c 'scripts/patch-libsodium-deno.sh && env CARDANO_BACKEND=emulator deno run --allow-net --allow-env --allow-read --allow-write --allow-run backend/api/main.ts'",
     "e2e:cardano-preprod-midnight-local": "bash scripts/e2e-cardano-preprod-midnight-local-pretty.sh"
   }
 }

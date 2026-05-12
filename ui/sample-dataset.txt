@@ -1,0 +1,4 @@
+NuAuth UI sample payload — replace this file or paste your own UTF-8 text below the line.
+---
+Human attestation sample: dataset v1, consent implied for local/dev only.
+Line 3: arbitrary prose or structured notes; the backend stores ciphertext + commitment only.

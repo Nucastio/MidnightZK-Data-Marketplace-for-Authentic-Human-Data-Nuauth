@@ -1,19 +1,36 @@
+# Environment
 .env
 .env.local
-*.log
+
+# OS / editor
 .DS_Store
+*.log
+
+# Runtime data
 data/
+
+# Build artifacts
 node_modules/
 contract/dist/
 midnight-local-cli/dist/
 midnight-local-cli/midnight-level-db/
 
-# Demo fixture playback + video production artifacts
+# AI agent skills
+.agents/
+skills/
+skills-lock.json
+*.impeccable.md
+
+# Playwright / E2E test artifacts
+playwright.config.ts
+e2e-demo.spec.ts
+test-results/
+
+# Demo recordings (except .mp4)
 fixtures/
 recordings/*
 !recordings/README.txt
-
+!recordings/*.mp4
 *.cast
-*.mp4
 *.gif
 *.webm

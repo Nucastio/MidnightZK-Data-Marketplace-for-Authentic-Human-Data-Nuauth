@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NuAuth — Human Data Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=2" />
+  </head>
+  <body>
+    <div class="wrap">
+
+      <nav class="top-nav">
+        <div class="wordmark">Nucast <span>·</span> NuAuth</div>
+        <div class="nav-status">
+          <input type="text" id="apiBase" value="https://promotes-wherever-tide-rules.trycloudflare.com" autocomplete="off" aria-label="API base URL" />
+          <button type="button" class="btn-connect" id="btnHealth">Connect</button>
+          <span class="status-dot" id="statusDot"></span>
+        </div>
+        <div class="nav-links">
+          <a href="https://www.nucast.io/" target="_blank" rel="noopener noreferrer">Nucast</a>
+        </div>
+      </nav>
+
+      <header class="hero">
+        <h1>Human Intelligence Data Marketplace</h1>
+        <p>Register authentic human data, anchor it with ZK proofs on Cardano + Midnight, and trade licenses on-chain.</p>
+        <p class="status-pill" id="healthPill" aria-live="polite"></p>
+      </header>
+
+      <div class="pipeline">
+
+        <div class="phase-label">
+          <span class="phase-badge creator">Creator</span>
+          <span>Publish &amp; verify your data</span>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step" id="step-1" data-status="active">
+          <div class="step-header" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-meta">
+              <h2>Register Dataset</h2>
+              <p>Upload your content — it's encrypted and a SHA-256 commitment is generated.</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="form-row">
+              <div class="form-group" style="flex: 0 0 200px">
+                <label for="filename">Filename</label>
+                <input type="text" id="filename" value="dataset.txt" autocomplete="off" />
+              </div>
+              <div class="form-group" style="flex: 1">
+                <label for="bodyText">Dataset content</label>
+                <textarea id="bodyText" rows="4" placeholder="Paste prose, notes, or structured text..."></textarea>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="ghost" id="btnSample">Load sample</button>
+              <button type="button" class="primary" id="btnRegister">Register dataset</button>
+            </div>
+            <div class="result" id="result-register" hidden>
+              <div class="result-row"><span class="result-label">Dataset ID</span><span class="result-value" id="outDatasetId"></span></div>
+              <div class="result-row"><span class="result-label">Creator</span><span class="result-value" id="outCreator"></span></div>
+              <div class="result-row"><span class="result-label">Commitment</span><span class="result-value mono" id="outCommitment"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" id="step-2" data-status="locked">
+          <div class="step-header" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-meta">
+              <h2>Stamp on Cardano</h2>
+              <p>Anchor the content hash to Cardano L1 via CIP-20 metadata transaction.</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="actions">
+              <button type="button" class="primary" id="btnStamp">Stamp on Cardano</button>
+            </div>
+            <div class="result" id="result-stamp" hidden>
+              <div class="result-row"><span class="result-label">Tx Hash</span><a class="result-value mono tx-link" id="outStampTx" target="_blank" rel="noopener noreferrer"></a></div>
+              <div class="result-row"><span class="result-label">L1 Anchor</span><span class="result-value mono" id="outL1Anchor"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" id="step-3" data-status="locked">
+          <div class="step-header" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-meta">
+              <h2>ZK Attestation (Midnight)</h2>
+              <p>Prove creator authenticity with zero-knowledge circuits and bind to the L1 anchor.</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="actions">
+              <button type="button" class="primary" id="btnMidnightServer">Run Midnight ZK &amp; Attest</button>
+            </div>
+            <p class="hint" id="midnightHint"></p>
+            <div class="result" id="result-attest" hidden>
+              <div class="result-row"><span class="result-label">Contract</span><span class="result-value mono" id="outContract"></span></div>
+              <div class="result-row"><span class="result-label">Prove Tx</span><span class="result-value mono" id="outProveTx"></span></div>
+              <div class="result-row"><span class="result-label">Bind Tx</span><span class="result-value mono" id="outBindTx"></span></div>
+              <div class="result-row"><span class="result-label">ZK Complete</span><span class="result-value" id="outZkComplete"></span></div>
+            </div>
+            <details class="advanced">
+              <summary>Manual attestation</summary>
+              <div class="form-row" style="margin-top: var(--space-3)">
+                <div class="form-group"><label for="contractAddr">Contract address</label><input type="text" id="contractAddr" autocomplete="off" /></div>
+                <div class="form-group"><label for="proveTx">proveCreatorStamp tx</label><input type="text" id="proveTx" autocomplete="off" /></div>
+                <div class="form-group"><label for="bindTx">bindL1Stamp tx</label><input type="text" id="bindTx" autocomplete="off" /></div>
+              </div>
+              <div class="actions">
+                <button type="button" class="ghost" id="btnAttest">Submit manual attestation</button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="phase-divider"></div>
+
+        <div class="phase-label">
+          <span class="phase-badge marketplace">Marketplace</span>
+          <span>List, license &amp; access data</span>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" id="step-4" data-status="locked">
+          <div class="step-header" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-meta">
+              <h2>List for Sale</h2>
+              <p>Lock a Plutus listing UTxO on Cardano with your asking price.</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="form-row">
+              <div class="form-group" style="flex: 0 0 200px">
+                <label for="priceLovelace">Price (lovelace)</label>
+                <input type="text" id="priceLovelace" value="2000000" autocomplete="off" />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="primary" id="btnList">Create listing</button>
+            </div>
+            <div class="result" id="result-list" hidden>
+              <div class="result-row"><span class="result-label">Lock Tx</span><a class="result-value mono tx-link" id="outListTx" target="_blank" rel="noopener noreferrer"></a></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-divider"></div>
+
+        <div class="phase-label">
+          <span class="phase-badge developer">Developer</span>
+          <span>Purchase &amp; decrypt data</span>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step" id="step-5" data-status="locked">
+          <div class="step-header" data-step="5">
+            <div class="step-number">5</div>
+            <div class="step-meta">
+              <h2>Buy License</h2>
+              <p>Spend the listing UTxO and pay the creator via Plutus V3 smart contract.</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="form-row">
+              <div class="form-group" style="flex: 0 0 200px">
+                <label for="buyLovelace">Pay (lovelace)</label>
+                <input type="text" id="buyLovelace" value="2000000" autocomplete="off" />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="primary" id="btnLicense">Purchase license</button>
+            </div>
+            <div class="result" id="result-license" hidden>
+              <div class="result-row"><span class="result-label">Purchase Tx</span><a class="result-value mono tx-link" id="outLicenseTx" target="_blank" rel="noopener noreferrer"></a></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step" id="step-6" data-status="locked">
+          <div class="step-header" data-step="6">
+            <div class="step-number">6</div>
+            <div class="step-meta">
+              <h2>Decrypt Data</h2>
+              <p>Recover the plaintext — requires an active license and ZK attestation (ABE gate).</p>
+            </div>
+            <div class="step-status-icon"></div>
+          </div>
+          <div class="step-body">
+            <div class="actions">
+              <button type="button" class="primary" id="btnDecrypt">Recover plaintext</button>
+            </div>
+            <div class="result" id="result-decrypt" hidden>
+              <label for="plainOut" style="margin-top: var(--space-3)">Decrypted content</label>
+              <textarea id="plainOut" readonly rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Dataset registry -->
+      <section class="registry-section">
+        <h2>Dataset Registry</h2>
+        <div class="actions">
+          <button type="button" class="ghost" id="btnDatasets">Refresh</button>
+          <button type="button" class="ghost" id="btnManifest">Download manifest</button>
+        </div>
+        <pre id="datasetsPre" class="code"></pre>
+      </section>
+
+      <!-- Collapsible activity log -->
+      <details class="activity-log" id="activityLog">
+        <summary>Activity Log</summary>
+        <div class="log-grid">
+          <div class="log-column">
+            <div class="log-column-label" id="logCardanoLabel">Cardano (L1)</div>
+            <div id="logCardano" class="log-view" role="region" aria-labelledby="logCardanoLabel" tabindex="0">
+              <div class="log-view-scroll"></div>
+            </div>
+          </div>
+          <div class="log-column">
+            <div class="log-column-label" id="logMidnightLabel">Midnight (ZK)</div>
+            <div id="logMidnight" class="log-view" role="region" aria-labelledby="logMidnightLabel" tabindex="0">
+              <div class="log-view-scroll"></div>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="ghost" id="btnCopyLogsAll">Copy logs</button>
+          <button type="button" class="ghost" id="btnClearLogsAll">Clear logs</button>
+        </div>
+      </details>
+
+      <footer>
+        <a href="https://www.nucast.io/" target="_blank" rel="noopener noreferrer">nucast.io</a> · NuAuth Protocol · Cardano + Midnight ZK
+      </footer>
+    </div>
+    <script type="module" src="./app.js?v=2"></script>
+  </body>
+</html>

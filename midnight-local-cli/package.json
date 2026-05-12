@@ -8,7 +8,8 @@
     "deploy": "tsx src/deploy-nuauth.ts",
     "run-all": "tsx src/run-nuauth-all.ts",
     "print-midnight-address": "tsx src/print-midnight-address.ts",
-    "fund-local-undeployed": "tsx src/fund-local-undeployed.ts"
+    "fund-local-undeployed": "tsx src/fund-local-undeployed.ts",
+    "fund-and-run": "tsx src/fund-and-run-nuauth.ts"
   },
   "dependencies": {
     "@midnight-ntwrk/compact-js": "^2.5.0",

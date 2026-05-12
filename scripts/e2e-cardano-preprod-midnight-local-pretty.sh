@@ -19,7 +19,6 @@ cd "$ROOT"
 
 OUT_JSON="${NUAUTH_E2E_OUT:-/tmp/nuauth-e2e-local-midnight-summary.json}"
 PARTIAL_JSON="${OUT_JSON%.json}-cardano-partial.json"
-API="${API_BASE:-http://127.0.0.1:${API_PORT:-8788}}"
 INDEXER_PORT="${INDEXER_PORT:-8088}"
 export NUAUTH_DATA_DIR="${NUAUTH_E2E_DATA_DIR:-/tmp/nuauth-e2e-local-$$}"
 mkdir -p "$NUAUTH_DATA_DIR"
@@ -73,6 +72,11 @@ set -a
 # shellcheck disable=SC1091
 source "${ROOT}/.env"
 set +a
+
+if [[ -n "${NUAUTH_E2E_API_PORT:-}" ]]; then
+  export API_PORT="$NUAUTH_E2E_API_PORT"
+fi
+API="${API_BASE:-http://127.0.0.1:${API_PORT:-8788}}"
 
 export CARDANO_BACKEND="${CARDANO_BACKEND:-blockfrost}"
 export MIDNIGHT_DEPLOY_NETWORK=undeployed

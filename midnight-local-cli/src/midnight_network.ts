@@ -36,7 +36,9 @@ export function getMidnightEndpoints(net: MidnightDeployNetwork): MidnightNetwor
     const indexerPort = Number.parseInt(process.env.INDEXER_PORT ?? "8088", 10);
     const nodePort = Number.parseInt(process.env.NODE_PORT ?? "9944", 10);
     const proofPort = Number.parseInt(process.env.PROOF_SERVER_PORT ?? "6300", 10);
-    const overhead = 300_000_000_000_000_000n;
+    // Local `yarn fund` DUST balances are far smaller than public testnets; use the same
+    // scale as Preview/Preprod here (see preview `overhead` below), not 1e3 larger.
+    const overhead = 300_000_000_000_000n;
     return {
       networkId: "undeployed",
       indexerHttp: `http://127.0.0.1:${indexerPort}/api/v4/graphql`,
